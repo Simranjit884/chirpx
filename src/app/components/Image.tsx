@@ -11,7 +11,7 @@ type ImageType = {
   tr?: boolean;
 };
 
-const urlEndpoint = "https://ik.imagekit.io/idv4ri02l/";
+const urlEndpoint = process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT;
 
 if (!urlEndpoint) {
   throw new Error("Error: Please add urlEndpoint to .env or .env.local");

@@ -1,6 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
 import React from "react";
+import Image from "./Image";
 
 const menuList = [
   {
@@ -72,7 +72,7 @@ const LeftBar = () => {
       <div className="flex flex-col items-center gap-4 text-lg xxl:items-start">
         {/** LOGO */}
         <Link href="/" className="rounded-full p-2 hover:bg-[#181818]">
-          <Image src="icons/logo.svg" alt="logo" width={24} height={24} />
+          <Image src="/icons/logo.svg" alt="logo" w={24} h={24} />
         </Link>
         <div className="flex flex-col gap-4">
           {menuList.map((item) => (
@@ -81,7 +81,7 @@ const LeftBar = () => {
               href={item.link}
               className="flex items-center gap-4 rounded-full p-2 hover:bg-[#181818]"
             >
-              <Image src={`icons/${item.icon}`} alt={item.name} width={24} height={24} />
+              <Image src={`/icons/${item.icon}`} alt={item.name} w={24} h={24} />
               <span className="hidden xxl:inline">{item.name}</span>
             </Link>
           ))}
@@ -91,7 +91,7 @@ const LeftBar = () => {
           href="/"
           className="flex size-12 items-center justify-center rounded-full bg-white text-black xxl:hidden"
         >
-          <Image src="icons/post.svg" alt="new post" width={24} height={24} />
+          <Image src="/icons/post.svg" alt="new post" w={24} h={24} />
         </Link>
         <Link
           href="/"
@@ -104,11 +104,11 @@ const LeftBar = () => {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="relative size-10 overflow-hidden rounded-full">
-            <Image src="/general/avatar.png" alt="simranjit" fill />
+            <Image src="/general/avatar.png" alt="simranjit" w={100} h={100} tr />
           </div>
           <div className="hidden flex-col xxl:flex">
             <span className="font-bold">Simranjit Singh</span>
-            <span className="text-textGray text-sm">@simranjitSingh</span>
+            <span className="text-sm text-textGray">@simranjitSingh</span>
           </div>
         </div>
         <div className="hidden cursor-pointer font-bold xxl:block">...</div>
