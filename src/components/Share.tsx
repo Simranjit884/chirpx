@@ -1,13 +1,23 @@
 "use client";
 
 import React, { useState, useRef, useTransition } from "react";
+import NextImage from "next/image";
 import Image from "./Image"; // Assuming this is your custom Image component
 import { upload } from "@imagekit/next"; // Import the client-side upload function
 import { shareAction, getAuthParamsAction } from "@/actions"; // Import both actions
+import ImageEditor from "./ImageEditor";
 
 const Share = () => {
   const [media, setMedia] = useState<File | null>(null);
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [settings, setSettings] = useState<{
+    type: "original" | "wide" | "square";
+    sensitive: boolean;
+  }>({
+    type: "original",
+    sensitive: false,
+  });
   const formRef = useRef<HTMLFormElement>(null);
 
   // useTransition provides a loading state without blocking the UI
@@ -22,7 +32,13 @@ const Share = () => {
     }
   };
 
-  const handleSubmit = async (formData: FormData) => {
+  const handleSubmit = async (
+    formData: FormData,
+    settings: {
+      type: "original" | "wide" | "square";
+      sensitive: boolean;
+    },
+  ) => {
     let imageUrl: string | null = null;
 
     // 1. If a file is selected, upload it to ImageKit first
@@ -35,6 +51,10 @@ const Share = () => {
         return;
       }
 
+      const transformation = `w-600, ${
+        settings.type === "square" ? "ar-1-1" : settings.type === "wide" ? "ar-16-9" : ""
+      }`;
+
       // 1b. Upload the file directly to ImageKit from the browser
       try {
         const uploadResult = await upload({
@@ -44,9 +64,15 @@ const Share = () => {
           publicKey: process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY!,
           folder: "/posts",
           useUniqueFileName: true,
+          transformation: {
+            pre: transformation,
+          },
+          customMetadata: {
+            sensitive: settings.sensitive,
+          },
         });
         imageUrl = uploadResult.url || null; // Get the final URL
-        console.log("Image uploaded successfully:", imageUrl);
+        console.log("Image uploaded successfully:", uploadResult);
       } catch (error) {
         console.error("ImageKit upload failed:", error);
         // Show an error message to the user
@@ -72,7 +98,7 @@ const Share = () => {
     // We use startTransition to handle the form submission
     <form
       ref={formRef}
-      action={(formData) => startTransition(() => handleSubmit(formData))}
+      action={(formData) => startTransition(() => handleSubmit(formData, settings))}
       className="flex gap-4 p-4"
     >
       {/* AVATAR */}
@@ -92,9 +118,27 @@ const Share = () => {
 
         {/* Image Preview */}
         {mediaPreview && (
-          <div className="relative mt-2">
-            <img src={mediaPreview} alt="Preview" className="w-full rounded-lg" />
-            <button
+          <div className="relative overflow-hidden rounded-xl">
+            <NextImage
+              src={mediaPreview}
+              alt="Preview"
+              width={600}
+              height={600}
+              className={`w-full ${
+                settings.type === "original"
+                  ? "h-full object-contain"
+                  : settings.type === "square"
+                    ? "aspect-square object-cover"
+                    : "aspect-video object-cover"
+              }`}
+            />
+            <div
+              className="absolute left-2 top-2 cursor-pointer rounded-full bg-black bg-opacity-50 px-4 py-1 text-sm font-bold text-white"
+              onClick={() => setIsEditorOpen(true)}
+            >
+              Edit
+            </div>
+            {/* <button
               type="button"
               onClick={() => {
                 setMedia(null);
@@ -103,9 +147,18 @@ const Share = () => {
               className="absolute right-2 top-2 rounded-full bg-black bg-opacity-50 p-1 text-white"
               disabled={isPending}
             >
-              &#x2715; {/* Close icon */}
-            </button>
+              &#x2715; // close icon
+            </button> */}
           </div>
+        )}
+
+        {isEditorOpen && mediaPreview && (
+          <ImageEditor
+            onClose={() => setIsEditorOpen(false)}
+            mediaPreview={mediaPreview}
+            settings={settings}
+            setSettings={setSettings}
+          />
         )}
 
         <div className="flex flex-wrap items-center justify-between gap-4">
