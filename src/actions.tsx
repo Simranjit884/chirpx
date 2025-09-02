@@ -14,6 +14,23 @@ type AuthSuccessResponse = {
 type AuthErrorResponse = { success: false; error: string };
 export type AuthActionResponse = AuthSuccessResponse | AuthErrorResponse;
 
+// Define the ImageKit upload result type
+export type ImageKitUploadResult = {
+  url?: string;
+  fileId?: string;
+  name?: string;
+  size?: number;
+  height?: number;
+  width?: number;
+  thumbnailUrl?: string;
+  filePath?: string;
+  fileType?: string;
+  tags?: string[];
+  isPrivateFile?: boolean;
+  customCoordinates?: string;
+  metadata?: Record<string, string | number | boolean>;
+};
+
 // ACTION 1: Get secure authentication parameters
 export const getAuthParamsAction = async (): Promise<AuthActionResponse> => {
   try {
@@ -35,7 +52,10 @@ export const getAuthParamsAction = async (): Promise<AuthActionResponse> => {
 
 // ACTION 2: Create the post after the image has been uploaded
 // This action now expects an imageUrl, not a file.
-export const shareAction = async (formData: FormData) => {
+export const shareAction = async (
+  formData: FormData,
+  uploadResult: ImageKitUploadResult | null,
+) => {
   const desc = formData.get("desc") as string;
   const imageUrl = formData.get("imageUrl") as string | null; // The URL from ImageKit
 
@@ -52,6 +72,7 @@ export const shareAction = async (formData: FormData) => {
   console.log("Post created successfully!");
   console.log("Description:", desc);
   console.log("Image URL:", imageUrl);
+  console.log("Upload Result:", uploadResult);
 
   // You can revalidate a path here if needed, e.g., revalidatePath('/');
 };

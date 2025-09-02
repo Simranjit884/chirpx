@@ -4,7 +4,7 @@ import React, { useState, useRef, useTransition } from "react";
 import NextImage from "next/image";
 import Image from "./Image"; // Assuming this is your custom Image component
 import { upload } from "@imagekit/next"; // Import the client-side upload function
-import { shareAction, getAuthParamsAction } from "@/actions"; // Import both actions
+import { shareAction, getAuthParamsAction, ImageKitUploadResult } from "@/actions"; // Import both actions
 import ImageEditor from "./ImageEditor";
 
 const Share = () => {
@@ -23,6 +23,8 @@ const Share = () => {
   // useTransition provides a loading state without blocking the UI
   const [isPending, startTransition] = useTransition();
 
+  console.log("media---", media);
+
   const handleMediaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -39,7 +41,9 @@ const Share = () => {
       sensitive: boolean;
     },
   ) => {
+    const file = formData.get("file") as File;
     let imageUrl: string | null = null;
+    let uploadResult: ImageKitUploadResult | null = null;
 
     // 1. If a file is selected, upload it to ImageKit first
     if (media) {
@@ -57,22 +61,24 @@ const Share = () => {
 
       // 1b. Upload the file directly to ImageKit from the browser
       try {
-        const uploadResult = await upload({
+        uploadResult = (await upload({
           file: media,
           fileName: media.name,
           ...authResponse.data,
           publicKey: process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY!,
           folder: "/posts",
           useUniqueFileName: true,
-          transformation: {
-            pre: transformation,
-          },
+          ...(file.type.includes("image") && {
+            transformation: {
+              pre: transformation,
+            },
+          }),
           customMetadata: {
             sensitive: settings.sensitive,
           },
-        });
+        })) as ImageKitUploadResult;
         imageUrl = uploadResult.url || null; // Get the final URL
-        console.log("Image uploaded successfully:", uploadResult);
+        console.log("Image uploaded successfully,", uploadResult);
       } catch (error) {
         console.error("ImageKit upload failed:", error);
         // Show an error message to the user
@@ -86,13 +92,34 @@ const Share = () => {
     }
 
     // 3. Call the final server action to save the post
-    await shareAction(formData);
+    // Only pass serializable data to server action
+    const serializedUploadResult = uploadResult
+      ? {
+          url: uploadResult.url,
+          fileId: uploadResult.fileId,
+          name: uploadResult.name,
+          size: uploadResult.size,
+          height: uploadResult.height,
+          width: uploadResult.width,
+          thumbnailUrl: uploadResult.thumbnailUrl,
+          filePath: uploadResult.filePath,
+          fileType: uploadResult.fileType,
+          tags: uploadResult.tags,
+          isPrivateFile: uploadResult.isPrivateFile,
+          customCoordinates: uploadResult.customCoordinates,
+          metadata: uploadResult.metadata,
+        }
+      : null;
+
+    await shareAction(formData, serializedUploadResult);
 
     // 4. Reset the form for the next post
     formRef.current?.reset();
     setMedia(null);
     setMediaPreview(null);
   };
+
+  // console.log("mediaPreview--", mediaPrev);
 
   return (
     // We use startTransition to handle the form submission
@@ -116,8 +143,8 @@ const Share = () => {
           disabled={isPending}
         />
 
-        {/* Image Preview */}
-        {mediaPreview && (
+        {/* PREVIEW IMAGE */}
+        {media?.type.includes("image") && mediaPreview && (
           <div className="relative overflow-hidden rounded-xl">
             <NextImage
               src={mediaPreview}
@@ -138,17 +165,24 @@ const Share = () => {
             >
               Edit
             </div>
-            {/* <button
-              type="button"
-              onClick={() => {
-                setMedia(null);
-                setMediaPreview(null);
-              }}
-              className="absolute right-2 top-2 rounded-full bg-black bg-opacity-50 p-1 text-white"
-              disabled={isPending}
+            <div
+              className="absolute right-2 top-2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-black bg-opacity-50 text-sm font-bold text-white"
+              onClick={() => setMedia(null)}
             >
-              &#x2715; // close icon
-            </button> */}
+              X
+            </div>
+          </div>
+        )}
+
+        {media?.type.includes("video") && mediaPreview && (
+          <div className="relative">
+            <video src={mediaPreview} controls />
+            <div
+              className="absolute right-2 top-2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-black bg-opacity-50 text-sm font-bold text-white"
+              onClick={() => setMedia(null)}
+            >
+              X
+            </div>
           </div>
         )}
 
@@ -169,7 +203,7 @@ const Share = () => {
               onChange={handleMediaChange}
               className="hidden"
               id="file"
-              accept="image/*" // Good practice to specify accepted file types
+              accept="image/*,video/*" // Good practice to specify accepted file types
               disabled={isPending}
             />
             <label htmlFor="file">

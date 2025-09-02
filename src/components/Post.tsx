@@ -2,8 +2,33 @@ import React from "react";
 import Image from "./Image";
 import PostInfo from "./PostInfo";
 import PostInteractions from "./PostInteractions";
+import { imagekit } from "@/utils";
+import Video from "./Video";
 
-const Post = () => {
+interface FileDetailsResponse {
+  width: number;
+  height: number;
+  filePath: string;
+  url: string;
+  fileType: string;
+  customMetadata?: { sensitive: boolean };
+}
+
+const Post = async () => {
+  // FETCH POST MEDIA
+
+  const getFileDetails = async (fileId: string): Promise<FileDetailsResponse> => {
+    return new Promise((resolve, reject) => {
+      imagekit.getFileDetails(fileId, function (error, result) {
+        if (error) reject(error);
+        else resolve(result as FileDetailsResponse);
+      });
+    });
+  };
+
+  const fileDetails = await getFileDetails("68b5c7645c7cd75eb864d8c7");
+
+  console.log(fileDetails);
   return (
     <div className="border-y-[1px] border-borderGray p-4">
       {/** POST TYPE */}
@@ -39,7 +64,21 @@ const Post = () => {
             officiis id mollitia quidem labore dicta. Voluptas eius, dolor minus vero sed quibusdam!
             Ea porro in voluptatum laudantium?
           </p>
-          <Image src="general/post.jpeg" alt="" w={600} h={600} />
+          {/* <Image src="general/post.jpeg" alt="" w={600} h={600} /> */}
+          {fileDetails && fileDetails.fileType === "image" ? (
+            <Image
+              src={fileDetails.filePath}
+              alt=""
+              w={fileDetails.width}
+              h={fileDetails.height}
+              className={fileDetails.customMetadata?.sensitive ? "blur-lg" : ""}
+            />
+          ) : (
+            <Video
+              src={fileDetails.filePath}
+              className={fileDetails.customMetadata?.sensitive ? "blur-lg" : ""}
+            />
+          )}
           <PostInteractions />
         </div>
       </div>
