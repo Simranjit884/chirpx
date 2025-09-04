@@ -88,13 +88,13 @@ const LeftBar = () => {
         </div>
         {/** BUTTON */}
         <Link
-          href="/"
+          href="/compose/post"
           className="flex size-12 items-center justify-center rounded-full bg-white text-black xxl:hidden"
         >
           <Image src="/icons/post.svg" alt="new post" w={24} h={24} />
         </Link>
         <Link
-          href="/"
+          href="/compose/post"
           className="hidden rounded-full bg-white px-20 py-2 font-bold text-black xxl:block"
         >
           Post

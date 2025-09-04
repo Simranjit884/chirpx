@@ -3,7 +3,7 @@ import Image from "./Image";
 import PostInfo from "./PostInfo";
 import PostInteractions from "./PostInteractions";
 import { imagekit } from "@/utils";
-import Video from "./Video";
+import Link from "next/link";
 
 interface FileDetailsResponse {
   width: number;
@@ -14,7 +14,7 @@ interface FileDetailsResponse {
   customMetadata?: { sensitive: boolean };
 }
 
-const Post = async () => {
+const Post = async ({ type }: { type?: "status" | "comment" }) => {
   // FETCH POST MEDIA
 
   const getFileDetails = async (fileId: string): Promise<FileDetailsResponse> => {
@@ -31,8 +31,8 @@ const Post = async () => {
   console.log(fileDetails);
   return (
     <div className="border-y-[1px] border-borderGray p-4">
-      {/** POST TYPE */}
-      <div className="mb-2 flex items-center gap-2 text-sm font-bold text-textGray">
+      {/* POST TYPE */}
+      <div className="from-bold mb-2 flex items-center gap-2 text-sm text-textGray">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
           <path
             fill="#71767b"
@@ -41,31 +41,53 @@ const Post = async () => {
         </svg>
         <span>Simranjit reposted</span>
       </div>
-      {/** POST CONTENT */}
-      <div className="flex gap-4">
-        {/** AVATAR */}
-        <div className="relative size-10 overflow-hidden rounded-full">
-          <Image src="general/avatar.png" alt="" w={100} h={100} tr />
+      {/* POST CONTENT */}
+      <div className={`flex gap-4 ${type === "status" && "flex-col"}`}>
+        {/* AVATAR */}
+        <div
+          className={`${
+            type === "status" && "hidden"
+          } relative h-10 w-10 overflow-hidden rounded-full`}
+        >
+          <Image src="general/avatar.png" alt="" w={100} h={100} tr={true} />
         </div>
-        {/** CONTENT */}
+        {/* CONTENT */}
         <div className="flex flex-1 flex-col gap-2">
-          {/** TOP */}
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-base font-bold">Simranjit</h1>
-              <span className="text-textGray">@simranjit</span>
-              <span className="text-textGray">1 day ago</span>
-            </div>
+          {/* TOP */}
+          <div className="flex w-full justify-between">
+            <Link href={`/SimranjitDev`} className="flex gap-4">
+              <div
+                className={`${
+                  type !== "status" && "hidden"
+                } relative h-10 w-10 overflow-hidden rounded-full`}
+              >
+                <Image src="general/avatar.png" alt="" w={100} h={100} tr={true} />
+              </div>
+              <div
+                className={`flex flex-wrap items-center gap-2 ${
+                  type === "status" && "flex-col !items-start gap-0"
+                }`}
+              >
+                <h1 className="text-md font-bold">Simranjit</h1>
+                <span className={`text-textGray ${type === "status" && "text-sm"}`}>
+                  @SimranjitDev
+                </span>
+                {type !== "status" && <span className="text-textGray">1 day ago</span>}
+              </div>
+            </Link>
             <PostInfo />
           </div>
-          {/**TEXT AND MEDIA */}
-          <p className="">
-            Lorem, ipsum dolor sit amet consectetur adipisicing elit. Adipisci repudiandae quo optio
-            officiis id mollitia quidem labore dicta. Voluptas eius, dolor minus vero sed quibusdam!
-            Ea porro in voluptatum laudantium?
-          </p>
-          {/* <Image src="general/post.jpeg" alt="" w={600} h={600} /> */}
-          {fileDetails && fileDetails.fileType === "image" ? (
+          {/* TEXT & MEDIA */}
+          <Link href={`/SimranjitDev/status/123`}>
+            <p className={`${type === "status" && "text-lg"}`}>
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Harum, animi. Laborum commodi
+              aliquam alias molestias odio, ab in, reprehenderit excepturi temporibus, ducimus
+              necessitatibus fugiat iure nam voluptas soluta pariatur inventore.
+            </p>
+          </Link>
+          <Image src="general/post.jpeg" alt="" w={600} h={600} />
+          {/* AFTER FETCHING THE POST MEDIA */}
+          {/* {fileDetails && fileDetails.fileType === "image" ? (
             <Image
               src={fileDetails.filePath}
               alt=""
@@ -78,7 +100,8 @@ const Post = async () => {
               src={fileDetails.filePath}
               className={fileDetails.customMetadata?.sensitive ? "blur-lg" : ""}
             />
-          )}
+          )} */}
+          {type === "status" && <span className="text-textGray">8:41 PM · Dec 5, 2024</span>}
           <PostInteractions />
         </div>
       </div>
