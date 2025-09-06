@@ -23,8 +23,6 @@ const Share = () => {
   // useTransition provides a loading state without blocking the UI
   const [isPending, startTransition] = useTransition();
 
-  console.log("media---", media);
-
   const handleMediaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -78,7 +76,6 @@ const Share = () => {
           },
         })) as ImageKitUploadResult;
         imageUrl = uploadResult.url || null; // Get the final URL
-        console.log("Image uploaded successfully,", uploadResult);
       } catch (error) {
         console.error("ImageKit upload failed:", error);
         // Show an error message to the user

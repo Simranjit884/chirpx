@@ -69,10 +69,10 @@ export const shareAction = async (
   //   }
   // });
 
-  console.log("Post created successfully!");
-  console.log("Description:", desc);
-  console.log("Image URL:", imageUrl);
-  console.log("Upload Result:", uploadResult);
+  // console.log("Post created successfully!");
+  // console.log("Description:", desc);
+  // console.log("Image URL:", imageUrl);
+  // console.log("Upload Result:", uploadResult);
 
   // You can revalidate a path here if needed, e.g., revalidatePath('/');
 };
