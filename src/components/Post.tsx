@@ -14,21 +14,7 @@ interface FileDetailsResponse {
   customMetadata?: { sensitive: boolean };
 }
 
-const Post = async ({ type }: { type?: "status" | "comment" }) => {
-  // FETCH POST MEDIA
-
-  const getFileDetails = async (fileId: string): Promise<FileDetailsResponse> => {
-    return new Promise((resolve, reject) => {
-      imagekit.getFileDetails(fileId, function (error, result) {
-        if (error) reject(error);
-        else resolve(result as FileDetailsResponse);
-      });
-    });
-  };
-
-  const fileDetails = await getFileDetails("68b5c7645c7cd75eb864d8c7");
-
-  // console.log(fileDetails);
+const Post = ({ type }: { type?: "status" | "comment" }) => {
   return (
     <div className="border-y-[1px] border-borderGray p-4">
       {/* POST TYPE */}
